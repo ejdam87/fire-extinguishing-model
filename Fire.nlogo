@@ -1,3 +1,5 @@
+;; Base fire model enhanced by: Adam Dzadon & Martin Tucek ( Masaryk's University )
+
 globals [
   initial-trees   ;; how many trees (green patches) we started with
   burned-trees    ;; how many have burned so far
@@ -6,21 +8,34 @@ globals [
 breed [fires fire]    ;; bright red turtles -- the leading edge of the fire
 breed [embers ember]  ;; turtles gradually fading from red to near black
 
+;; function to initializes the automaton
 to setup
   clear-all
   set-default-shape turtles "square"
   ;; make some green trees
   ask patches with [(random-float 100) < density]
     [ set pcolor green ]
-  ;; make a column of burning trees
-  ask patches with [pxcor = min-pxcor]
-    [ ignite ]
+  center-init-fire 30
   ;; set tree counts
   set initial-trees count patches with [pcolor = green]
   set burned-trees 0
   reset-ticks
 end
 
+;; function to start fire on the left side
+to left-init-fire
+  ;; make a column of burning trees
+  ask patches with [pxcor = min-pxcor]
+    [ ignite ]
+end
+
+;; function to start fire with given radius in the middle
+to center-init-fire [ radius ]
+  ask patches with [ (pxcor * pxcor + pycor * pycor <= radius) and pcolor = green ]
+    [ ignite ]
+end
+
+;; function to start simulation
 to go
   if not any? turtles  ;; either fires or embers
     [ stop ]
@@ -50,6 +65,7 @@ to fade-embers
 end
 
 
+; Template code from:
 ; Copyright 1997 Uri Wilensky.
 ; See Info tab for full copyright and license.
 @#$#@#$#@
@@ -100,7 +116,7 @@ density
 density
 0.0
 99.0
-57.0
+62.0
 1.0
 1
 %
@@ -141,14 +157,29 @@ NIL
 1
 
 CHOOSER
-2
-288
-94
-333
+7
+283
+131
+328
 wind-direction
 wind-direction
 "S" "N" "W" "E" "SE" "SW" "NE" "NW" "None"
 0
+
+SLIDER
+7
+341
+130
+374
+wind-speed
+wind-speed
+0
+100
+50.0
+1
+1
+m/s
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
