@@ -1,8 +1,12 @@
-;; Base fire model enhanced by: Adam Dzadon & Martin Tucek ( Masaryk's University )
+;; Base fire model adapted and enhanced by: Adam Dzadon & Martin Tucek ( Masaryk's University )
 
 globals [
   initial-trees   ;; how many trees (green patches) we started with
   burned-trees    ;; how many have burned so far
+
+  opposite-prob   ;; probability that the tree which grows in the opposite direction of the wind will ignite
+  wind-prob       ;; probability that the tree which grows in the direction of the wind will ignite
+  default-prob    ;; probabilty that the tree will ignite (is not influenced with wind direction)
 ]
 
 breed [fires fire]    ;; bright red turtles -- the leading edge of the fire
@@ -15,10 +19,15 @@ to setup
   ;; make some green trees
   ask patches with [(random-float 100) < density]
     [ set pcolor green ]
-  center-init-fire 30
+  center-init-fire 60
   ;; set tree counts
   set initial-trees count patches with [pcolor = green]
   set burned-trees 0
+
+  set default-prob 90
+  set wind-prob 100
+  set opposite-prob 80
+
   reset-ticks
 end
 
@@ -39,12 +48,118 @@ end
 to go
   if not any? turtles  ;; either fires or embers
     [ stop ]
-  ask fires
-    [ ask neighbors4 with [pcolor = green]
-        [ ignite ]
-      set breed embers ]
+  spread-fire
   fade-embers
   tick
+end
+
+;; function to spred fire (wind direction is taken into consideration)
+to spread-fire
+  ask fires
+  [
+    let north patch-at 0 1
+    let south patch-at 0 -1
+    let east patch-at 1 0
+    let west patch-at -1 0
+
+    if north != nobody
+    [
+      ask north
+      [
+        if pcolor = green
+        [
+          (
+            ifelse wind-direction = "N" and (random-float 100) < wind-prob
+            [
+              ignite
+            ]
+            wind-direction != "N" and wind-direction = "S" and (random-float 100) < opposite-prob
+            [
+              ignite
+            ]
+            wind-direction != "N" and wind-direction != "S" and (random-float 100) < default-prob
+            [
+              ignite
+            ]
+          )
+        ]
+      ]
+    ]
+
+    if south != nobody
+    [
+      ask south
+      [
+        if pcolor = green
+        [
+          (
+            ifelse wind-direction = "S" and (random-float 100) < wind-prob
+            [
+              ignite
+            ]
+            wind-direction != "S" and wind-direction = "N" and (random-float 100) < opposite-prob
+            [
+              ignite
+            ]
+            wind-direction != "S" and wind-direction != "N" and (random-float 100) < default-prob
+            [
+              ignite
+            ]
+          )
+        ]
+      ]
+    ]
+
+    if east != nobody
+    [
+      ask east
+      [
+        if pcolor = green
+        [
+          (
+            ifelse wind-direction = "E" and (random-float 100) < wind-prob
+            [
+              ignite
+            ]
+            wind-direction != "E" and wind-direction = "W" and (random-float 100) < opposite-prob
+            [
+              ignite
+            ]
+            wind-direction != "W" and wind-direction != "E" and (random-float 100) < default-prob
+            [
+              ignite
+            ]
+          )
+        ]
+      ]
+    ]
+
+    if west != nobody
+    [
+      ask west
+      [
+        if pcolor = green
+        [
+          (
+            ifelse wind-direction = "W" and (random-float 100) < wind-prob
+            [
+              ignite
+            ]
+            wind-direction != "W" and wind-direction = "E" and (random-float 100) < opposite-prob
+            [
+              ignite
+            ]
+            wind-direction != "W" and wind-direction != "E" and (random-float 100) < default-prob
+            [
+              ignite
+            ]
+          )
+        ]
+      ]
+    ]
+
+    set breed embers
+  ]
 end
 
 ;; creates the fire turtles
@@ -70,10 +185,10 @@ end
 ; See Info tab for full copyright and license.
 @#$#@#$#@
 GRAPHICS-WINDOW
-200
-10
-710
-521
+365
+24
+1095
+575
 -1
 -1
 2.0
@@ -86,10 +201,10 @@ GRAPHICS-WINDOW
 0
 0
 1
--125
-125
--125
-125
+-180
+180
+-135
+135
 1
 1
 1
@@ -97,10 +212,10 @@ ticks
 30.0
 
 MONITOR
-43
-131
-158
-176
+27
+436
+142
+481
 percent burned
 (burned-trees / initial-trees)\n* 100
 1
@@ -116,7 +231,7 @@ density
 density
 0.0
 99.0
-62.0
+65.0
 1.0
 1
 %
@@ -157,29 +272,14 @@ NIL
 1
 
 CHOOSER
-7
-283
-131
-328
+26
+191
+150
+236
 wind-direction
 wind-direction
-"S" "N" "W" "E" "SE" "SW" "NE" "NW" "None"
-0
-
-SLIDER
-7
-341
-130
-374
-wind-speed
-wind-speed
-0
-100
-50.0
+"S" "N" "W" "E" "None"
 1
-1
-m/s
-HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
