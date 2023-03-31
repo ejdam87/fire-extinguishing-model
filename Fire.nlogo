@@ -24,6 +24,9 @@ to setup
   set initial-trees count patches with [pcolor = green]
   set burned-trees 0
 
+  ask patches with [((random-float 100) < rocks) and (pcolor != green)]
+      [ set pcolor blue]
+
   set default-prob 90
   set wind-prob 100
   set opposite-prob 80
@@ -68,16 +71,17 @@ to spread-fire
       [
         if pcolor = green
         [
+          let north-dec decrease-chance north
           (
-            ifelse wind-direction = "N" and (random-float 100) < wind-prob
+            ifelse wind-direction = "N" and (random-float 100 + (north-dec)) < wind-prob
             [
               ignite
             ]
-            wind-direction != "N" and wind-direction = "S" and (random-float 100) < opposite-prob
+            wind-direction != "N" and wind-direction = "S" and (random-float 100 + (north-dec)) < opposite-prob
             [
               ignite
             ]
-            wind-direction != "N" and wind-direction != "S" and (random-float 100) < default-prob
+            wind-direction != "N" and wind-direction != "S" and (random-float 100 + (north-dec)) < default-prob
             [
               ignite
             ]
@@ -92,16 +96,17 @@ to spread-fire
       [
         if pcolor = green
         [
+          let south-dec decrease-chance south
           (
-            ifelse wind-direction = "S" and (random-float 100) < wind-prob
+            ifelse wind-direction = "S" and (random-float 100 + south-dec) < wind-prob
             [
               ignite
             ]
-            wind-direction != "S" and wind-direction = "N" and (random-float 100) < opposite-prob
+            wind-direction != "S" and wind-direction = "N" and (random-float 100 + south-dec) < opposite-prob
             [
               ignite
             ]
-            wind-direction != "S" and wind-direction != "N" and (random-float 100) < default-prob
+            wind-direction != "S" and wind-direction != "N" and (random-float 100 + south-dec) < default-prob
             [
               ignite
             ]
@@ -116,16 +121,17 @@ to spread-fire
       [
         if pcolor = green
         [
+          let east-dec decrease-chance east
           (
-            ifelse wind-direction = "E" and (random-float 100) < wind-prob
+            ifelse wind-direction = "E" and (random-float 100 + east-dec) < wind-prob
             [
               ignite
             ]
-            wind-direction != "E" and wind-direction = "W" and (random-float 100) < opposite-prob
+            wind-direction != "E" and wind-direction = "W" and (random-float 100 + east-dec) < opposite-prob
             [
               ignite
             ]
-            wind-direction != "W" and wind-direction != "E" and (random-float 100) < default-prob
+            wind-direction != "W" and wind-direction != "E" and (random-float 100 + east-dec) < default-prob
             [
               ignite
             ]
@@ -140,16 +146,17 @@ to spread-fire
       [
         if pcolor = green
         [
+          let west-dec decrease-chance west
           (
-            ifelse wind-direction = "W" and (random-float 100) < wind-prob
+            ifelse wind-direction = "W" and (random-float 100 + west-dec) < wind-prob
             [
               ignite
             ]
-            wind-direction != "W" and wind-direction = "E" and (random-float 100) < opposite-prob
+            wind-direction != "W" and wind-direction = "E" and (random-float 100 + west-dec) < opposite-prob
             [
               ignite
             ]
-            wind-direction != "W" and wind-direction != "E" and (random-float 100) < default-prob
+            wind-direction != "W" and wind-direction != "E" and (random-float 100 + west-dec) < default-prob
             [
               ignite
             ]
@@ -160,6 +167,20 @@ to spread-fire
 
     set breed embers
   ]
+end
+
+;; function reduces chances of fire (because of water/rocks)
+to-report decrease-chance [t-patch] ;;
+  let result 0
+  ask t-patch[
+    ask patches in-radius 1 [
+    if pcolor = blue [
+      set result result + influence-of-wetness
+      ]
+    ]
+  ]
+
+  report result
 end
 
 ;; creates the fire turtles
@@ -231,7 +252,7 @@ density
 density
 0.0
 99.0
-65.0
+70.0
 1.0
 1
 %
@@ -280,6 +301,36 @@ wind-direction
 wind-direction
 "S" "N" "W" "E" "None"
 1
+
+SLIDER
+16
+326
+188
+359
+rocks
+rocks
+0
+100
+100.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+15
+380
+187
+413
+influence-of-wetness
+influence-of-wetness
+0
+100
+9.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
