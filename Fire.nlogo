@@ -24,7 +24,7 @@ to setup
   set initial-trees count patches with [pcolor = green]
   set burned-trees 0
 
-  ask patches with [((random-float 100) < rocks) and (pcolor != green)]
+  ask patches with [((random-float 100) < wet-environment) and (pcolor != green)]
       [ set pcolor blue]
 
   set default-prob 90
@@ -34,17 +34,19 @@ to setup
   reset-ticks
 end
 
-;; function to start fire on the left side
-to left-init-fire
-  ;; make a column of burning trees
-  ask patches with [pxcor = min-pxcor]
+;; TODO - function to drop a certain amount of water at given coordinates
+to drop-water [ px py ]
+end
+
+;; function to start fire at given coordinates (px,py) with radius
+to init-fire [ px py radius ]
+  ask patches with [ ( (pxcor - px)^(2) + (pycor - py)^(2) <= radius) and pcolor = green ]
     [ ignite ]
 end
 
 ;; function to start fire with given radius in the middle
 to center-init-fire [ radius ]
-  ask patches with [ (pxcor * pxcor + pycor * pycor <= radius) and pcolor = green ]
-    [ ignite ]
+  init-fire 0 0 radius
 end
 
 ;; function to start simulation
@@ -56,7 +58,7 @@ to go
   tick
 end
 
-;; function to spred fire (wind direction is taken into consideration)
+;; function to spred fire (all conditions are taken into consideration)
 to spread-fire
   ask fires
   [
@@ -307,11 +309,11 @@ SLIDER
 326
 188
 359
-rocks
-rocks
+wet-environment
+wet-environment
 0
 100
-100.0
+25.0
 1
 1
 NIL
@@ -326,7 +328,7 @@ influence-of-wetness
 influence-of-wetness
 0
 100
-9.0
+20.0
 1
 1
 NIL
