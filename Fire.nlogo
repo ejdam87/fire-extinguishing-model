@@ -302,7 +302,7 @@ CHOOSER
 wind-direction
 wind-direction
 "S" "N" "W" "E" "None"
-1
+2
 
 SLIDER
 16
@@ -313,7 +313,7 @@ wet-environment
 wet-environment
 0
 100
-25.0
+17.0
 1
 1
 NIL
@@ -328,7 +328,7 @@ influence-of-wetness
 influence-of-wetness
 0
 100
-20.0
+17.0
 1
 1
 NIL
