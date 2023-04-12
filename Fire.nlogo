@@ -1,12 +1,20 @@
 ;; Base fire model adapted and enhanced by: Adam Dzadon & Martin Tucek ( Masaryk's University )
 
 globals [
-  initial-trees   ;; how many trees (green patches) we started with
-  burned-trees    ;; how many have burned so far
+  initial-trees         ;; how many trees (green patches) we started with
+  burned-trees          ;; how many have burned so far
 
-  opposite-prob   ;; probability that the tree which grows in the opposite direction of the wind will ignite
-  wind-prob       ;; probability that the tree which grows in the direction of the wind will ignite
-  default-prob    ;; probabilty that the tree will ignite (is not influenced with wind direction)
+  opposite-prob         ;; probability that the tree which grows in the opposite direction of the wind will ignite
+  wind-prob             ;; probability that the tree which grows in the direction of the wind will ignite
+  default-prob          ;; probabilty that the tree will ignite (is not influenced with wind direction)
+
+  extinguish-radius     ;; Radius of water-drop inpact
+  extinguish-rate       ;; once per WHAT amount of ticks will the water be dropped
+
+  dropped-water         ;; total amount of "cyan" cells (the cells where the water was dropped)
+  extinguishing-water   ;; amount of water which was not thrown at burning tree
+
+  fading-rate           ;; per what amount of ticks the embers starts fading
 ]
 
 breed [fires fire]    ;; bright red turtles -- the leading edge of the fire
@@ -31,11 +39,53 @@ to setup
   set wind-prob 100
   set opposite-prob 80
 
+  set extinguish-radius 10
+  set extinguish-rate 5
+
+  set dropped-water 0
+  set extinguishing-water 0
+
+  set fading-rate 3
+
   reset-ticks
 end
 
-;; TODO - function to drop a certain amount of water at given coordinates
+
+;; Fire-fighting strategies
+;; ---
+
+to no-throw
+end
+
+to uniform-throw
+  let x random-float (max-pxcor + 1 - min-pxcor) + min-pxcor
+  let y random-float (max-pycor + 1 - min-pycor) + min-pycor
+  drop-water x y
+end
+
+;; ---
+
+;; Function to simulate helicopter water throw (drops water at given coordinates)
 to drop-water [ px py ]
+
+  extinguish-fire px py
+  ask patches with [ ( (pxcor - px)^(2) + (pycor - py)^(2) <= extinguish-radius ) ]
+    [
+      set pcolor cyan
+      set dropped-water dropped-water + 1
+    ]
+end
+
+;; Sub-procedure for "drop-water" which kills "fires and embers" turtles
+to extinguish-fire [ px py ]
+  ask turtles with [breed = fires or breed = embers]
+  [
+    if ( (pxcor - px)^(2) + (pycor - py)^(2) <= extinguish-radius )
+    [
+      set extinguishing-water extinguishing-water + 1
+      die
+    ]
+  ]
 end
 
 ;; function to start fire at given coordinates (px,py) with radius
@@ -55,6 +105,13 @@ to go
     [ stop ]
   spread-fire
   fade-embers
+
+  ;; Start fire-fighting with given delay and with given rate
+  if (ticks >= extinguish-starting-tick) and (ticks mod extinguish-rate = 0)
+  [
+    uniform-throw  ;; Selected strategy
+  ]
+
   tick
 end
 
@@ -195,11 +252,20 @@ end
 
 ;; achieve fading color effect for the fire as it burns
 to fade-embers
-  ask embers
-    [ set color color - 0.3  ;; make red darker
+
+  if (ticks mod fading-rate = 0)
+  [
+    ask embers
+    [
+      set color color - 0.3  ;; make red darker
       if color < red - 3.5     ;; are we almost at black?
         [ set pcolor color
-          die ] ]
+          die
+        ]
+    ]
+  ]
+
+
 end
 
 
@@ -302,7 +368,7 @@ CHOOSER
 wind-direction
 wind-direction
 "S" "N" "W" "E" "None"
-2
+1
 
 SLIDER
 16
@@ -333,6 +399,79 @@ influence-of-wetness
 1
 NIL
 HORIZONTAL
+
+SLIDER
+21
+272
+193
+305
+extinguish-starting-tick
+extinguish-starting-tick
+0
+100
+14.0
+1
+1
+NIL
+HORIZONTAL
+
+MONITOR
+27
+494
+143
+539
+total water spent
+dropped-water
+17
+1
+11
+
+PLOT
+1125
+39
+1496
+260
+Growth of burned trees count
+ticks
+burned-trees / initial-trees
+0.0
+500.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot burned-trees / initial-trees"
+
+PLOT
+1129
+281
+1492
+441
+Efficiency of water usage
+ticks
+extinguishing-water / dropped-water
+0.0
+500.0
+0.0
+1.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot extinguishing-water / dropped-water"
+
+MONITOR
+25
+552
+148
+597
+Water spent on fire
+extinguishing-water
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
