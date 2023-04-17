@@ -11,6 +11,8 @@ globals [
   extinguish-radius     ;; Radius of water-drop inpact
   extinguish-rate       ;; once per WHAT amount of ticks will the water be dropped
 
+  influence-of-wetness  ;; how much to reduce probability of fire spread when wet environment
+
   dropped-water         ;; total amount of "cyan" cells (the cells where the water was dropped)
   extinguishing-water   ;; amount of water which was not thrown at burning tree
 
@@ -38,6 +40,8 @@ to setup
   set default-prob 90
   set wind-prob 100
   set opposite-prob 80
+
+  set influence-of-wetness 20
 
   set extinguish-radius 10
   set extinguish-rate 5
@@ -228,7 +232,7 @@ to spread-fire
   ]
 end
 
-;; function reduces chances of fire (because of water/rocks)
+;; function reduces chances of fire (because of wet environment)
 to-report decrease-chance [t-patch] ;;
   let result 0
   ask t-patch[
@@ -301,10 +305,10 @@ ticks
 30.0
 
 MONITOR
-27
-436
-142
-481
+12
+376
+133
+421
 percent burned
 (burned-trees / initial-trees)\n* 100
 1
@@ -361,50 +365,35 @@ NIL
 1
 
 CHOOSER
-26
-191
+58
+187
 150
-236
+232
 wind-direction
 wind-direction
 "S" "N" "W" "E" "None"
-1
+4
 
 SLIDER
-16
-326
-188
-359
+18
+253
+190
+286
 wet-environment
 wet-environment
 0
 100
-17.0
+0.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-15
-380
-187
-413
-influence-of-wetness
-influence-of-wetness
-0
-100
-17.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-21
-272
-193
-305
+18
+135
+190
+168
 extinguish-starting-tick
 extinguish-starting-tick
 0
@@ -416,10 +405,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-27
-494
-143
-539
+9
+442
+131
+487
 total water spent
 dropped-water
 17
@@ -427,10 +416,10 @@ dropped-water
 11
 
 PLOT
-1125
-39
-1496
-260
+1115
+26
+1486
+253
 Growth of burned trees count
 ticks
 burned-trees / initial-trees
@@ -445,10 +434,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot burned-trees / initial-trees"
 
 PLOT
-1129
-281
-1492
-441
+1114
+374
+1477
+574
 Efficiency of water usage
 ticks
 extinguishing-water / dropped-water
@@ -463,10 +452,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot extinguishing-water / dropped-water"
 
 MONITOR
-25
-552
-148
-597
+9
+505
+132
+550
 Water spent on fire
 extinguishing-water
 17
