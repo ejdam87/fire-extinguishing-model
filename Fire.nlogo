@@ -39,7 +39,7 @@ to setup
 
   set default-prob 90
   set wind-prob 100
-  set opposite-prob 60
+  set opposite-prob 70
 
   set influence-of-wetness 20
 
@@ -223,7 +223,26 @@ to go
   ;; Start fire-fighting with given delay and with given rate
   if (ticks >= extinguish-starting-tick) and (ticks mod extinguish-rate = 0)
   [
-    wind-throw  ;; Selected strategy
+    if (fighting-strategy = "Uniform")
+    [
+      uniform-throw
+    ]
+    if (fighting-strategy = "No fighting")
+    [
+      no-throw
+    ]
+    if (fighting-strategy = "Wetness")
+    [
+      wet-throw
+    ]
+    if (fighting-strategy = "Wind")
+    [
+      wind-throw
+    ]
+    if (fighting-strategy = "Wetness & Wind")
+    [
+      ;; TODO
+    ]
   ]
 
   tick
@@ -388,10 +407,10 @@ end
 ; See Info tab for full copyright and license.
 @#$#@#$#@
 GRAPHICS-WINDOW
-365
-24
-1095
-575
+248
+28
+1058
+579
 -1
 -1
 2.0
@@ -404,8 +423,8 @@ GRAPHICS-WINDOW
 0
 0
 1
--180
-180
+-200
+200
 -135
 135
 1
@@ -415,10 +434,10 @@ ticks
 30.0
 
 MONITOR
-12
-376
-133
-421
+62
+333
+183
+378
 percent burned
 (burned-trees / initial-trees)\n* 100
 1
@@ -434,7 +453,7 @@ density
 density
 0.0
 99.0
-80.0
+71.0
 1.0
 1
 %
@@ -475,10 +494,10 @@ NIL
 1
 
 CHOOSER
-58
-187
-150
-232
+131
+230
+223
+275
 wind-direction
 wind-direction
 "S" "N" "W" "E" "None"
@@ -486,14 +505,14 @@ wind-direction
 
 SLIDER
 18
-253
+182
 190
-286
+215
 wet-environment
 wet-environment
 0
 100
-29.0
+0.0
 1
 1
 NIL
@@ -515,10 +534,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-9
-442
-131
-487
+61
+426
+183
+471
 total water spent
 dropped-water
 17
@@ -562,15 +581,25 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot extinguishing-water / dropped-water"
 
 MONITOR
-9
-505
-132
-550
+58
+518
+181
+563
 Water spent on fire
 extinguishing-water
 17
 1
 11
+
+CHOOSER
+8
+230
+117
+275
+fighting-strategy
+fighting-strategy
+"Uniform" "No fighting" "Wetness" "Wind" "Wetness & Wind"
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
