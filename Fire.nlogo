@@ -39,12 +39,12 @@ to setup
 
   set default-prob 90
   set wind-prob 100
-  set opposite-prob 80
+  set opposite-prob 60
 
   set influence-of-wetness 20
 
   set extinguish-radius 10
-  set extinguish-rate 5
+  set extinguish-rate 3
 
   set dropped-water 0
   set extinguishing-water 0
@@ -67,6 +67,116 @@ to uniform-throw
   drop-water x y
 end
 
+to wind-throw
+
+  let coords []
+  ask turtles with [breed = fires]
+  [
+    if ( wind-direction = "N" )
+    [
+      set coords find-max-at-given-direction 0 1
+    ]
+    if ( wind-direction = "S" )
+    [
+      set coords find-max-at-given-direction 0 -1
+    ]
+    if ( wind-direction = "E" )
+    [
+      set coords find-max-at-given-direction 1 0
+    ]
+    if ( wind-direction = "W" )
+    [
+      set coords find-max-at-given-direction -1 0
+    ]
+  ]
+
+  let list-len length coords
+  if ( list-len = 2 )
+  [
+    let x item 0 coords
+    let y item 1 coords
+
+    drop-water x y
+  ]
+
+end
+
+
+to-report find-max-at-given-direction [ dir-x dir-y ]
+  let rx -1
+  let ry -1
+
+  ask turtles with [breed = fires]
+  [
+
+    if ( pxcor * dir-x + pycor * dir-y > dir-x * rx + dir-y * ry )
+    [
+      set rx pxcor
+      set ry pycor
+    ]
+
+  ]
+
+  let res []
+  set res lput rx res
+  set res lput ry res
+  report res
+end
+
+
+to wet-throw
+
+  let most-urgent -1
+  let urgent-x -1
+  let urgent-y -1
+  ask turtles with [breed = fires]
+  [
+    let current wet-index(self)
+    if ( current > most-urgent )
+    [
+      set most-urgent current
+      set urgent-x pxcor
+      set urgent-y pycor
+    ]
+  ]
+
+  if ( urgent-x >= 0 )
+  [
+    drop-water urgent-x urgent-y
+  ]
+
+
+end
+
+to-report wet-index [ t-patch ]
+
+    let res 0
+    ask patches in-radius 1
+    [
+      if (pcolor = red)
+      [
+        set res res + 9
+      ]
+
+      if (pcolor = green)
+      [
+        set res res + 1
+      ]
+
+      if (pcolor = black)
+      [
+        set res res + 0
+      ]
+
+      if (pcolor = blue or pcolor = cyan)
+      [
+        set res res - 1
+      ]
+
+    ]
+    report res
+
+end
 ;; ---
 
 ;; Function to simulate helicopter water throw (drops water at given coordinates)
@@ -113,7 +223,7 @@ to go
   ;; Start fire-fighting with given delay and with given rate
   if (ticks >= extinguish-starting-tick) and (ticks mod extinguish-rate = 0)
   [
-    uniform-throw  ;; Selected strategy
+    wind-throw  ;; Selected strategy
   ]
 
   tick
@@ -324,7 +434,7 @@ density
 density
 0.0
 99.0
-70.0
+80.0
 1.0
 1
 %
@@ -372,7 +482,7 @@ CHOOSER
 wind-direction
 wind-direction
 "S" "N" "W" "E" "None"
-4
+2
 
 SLIDER
 18
@@ -383,7 +493,7 @@ wet-environment
 wet-environment
 0
 100
-0.0
+29.0
 1
 1
 NIL
@@ -398,7 +508,7 @@ extinguish-starting-tick
 extinguish-starting-tick
 0
 100
-14.0
+18.0
 1
 1
 NIL
