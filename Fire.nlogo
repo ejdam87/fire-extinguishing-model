@@ -29,6 +29,8 @@ to setup
   ;; make some green trees
   ask patches with [(random-float 100) < density]
     [ set pcolor green ]
+
+  ;; We make fire to start at the center of our forest
   center-init-fire 60
   ;; set tree counts
   set initial-trees count patches with [pcolor = green]
@@ -37,6 +39,7 @@ to setup
   ask patches with [((random-float 100) < wet-environment) and (pcolor != green)]
       [ set pcolor blue]
 
+  ;; --- Global variable settings
   set default-prob 90
   set wind-prob 100
   set opposite-prob 70
@@ -44,12 +47,13 @@ to setup
   set influence-of-wetness 20
 
   set extinguish-radius 10
-  set extinguish-rate 3
+  set extinguish-rate 4
 
   set dropped-water 0
   set extinguishing-water 0
 
   set fading-rate 3
+  ;; ---
 
   reset-ticks
 end
@@ -69,8 +73,34 @@ to uniform-throw
   drop-water x y
 end
 
+;; Strategy to find an 'epicenter' of fire and throw water there
+to fire-throw
+  let rx -1
+  let ry -1
+  let top -1
+
+  let radius 5
+
+  ask turtles with [breed = fires]
+  [
+    let current count turtles in-radius radius with [breed = fires]
+    if (current > top)
+    [
+      set top current
+      set rx pxcor
+      set ry pycor
+    ]
+  ]
+
+  drop-water rx ry
+end
+
 ;; Strategy is to throw water on the the furthest fire at current wind direction
-to wind-throw [ turtles-given ]
+to wind-throw
+  wind-throw-help turtles with [breed = fires]
+end
+
+to wind-throw-help [ turtles-given ]
 
   let coords []
   ask turtles-given
@@ -221,7 +251,7 @@ to ultimate
 
   ;; --- Wind part
   let urgent-set turtle-set urgent
-  wind-throw urgent-set
+  wind-throw-help urgent-set
   ;; ---
 
 end
@@ -280,13 +310,17 @@ to go
     [
       no-throw
     ]
+    if (fighting-strategy = "Fire density")
+    [
+      fire-throw
+    ]
     if (fighting-strategy = "Wetness")
     [
       wet-throw
     ]
     if (fighting-strategy = "Wind")
     [
-      wind-throw turtles with [breed = fires]
+      wind-throw
     ]
     if (fighting-strategy = "Wetness & Wind")
     [
@@ -647,8 +681,8 @@ CHOOSER
 275
 fighting-strategy
 fighting-strategy
-"Uniform" "No fighting" "Wetness" "Wind" "Wetness & Wind"
-4
+"Uniform" "No fighting" "Fire density" "Wetness" "Wind" "Wetness & Wind"
+2
 
 @#$#@#$#@
 ## WHAT IS IT?
