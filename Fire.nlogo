@@ -58,35 +58,38 @@ end
 ;; Fire-fighting strategies
 ;; ---
 
+;; Strategy is to not throw any water at all
 to no-throw
 end
 
+;; Strategy is to throw water randomly
 to uniform-throw
   let x random-float (max-pxcor + 1 - min-pxcor) + min-pxcor
   let y random-float (max-pycor + 1 - min-pycor) + min-pycor
   drop-water x y
 end
 
-to wind-throw
+;; Strategy is to throw water on the the furthest fire at current wind direction
+to wind-throw [ turtles-given ]
 
   let coords []
-  ask turtles with [breed = fires]
+  ask turtles-given
   [
     if ( wind-direction = "N" )
     [
-      set coords find-max-at-given-direction 0 1
+      set coords find-max-at-given-direction turtles-given 0 1
     ]
     if ( wind-direction = "S" )
     [
-      set coords find-max-at-given-direction 0 -1
+      set coords find-max-at-given-direction turtles-given 0 -1
     ]
     if ( wind-direction = "E" )
     [
-      set coords find-max-at-given-direction 1 0
+      set coords find-max-at-given-direction turtles-given 1 0
     ]
     if ( wind-direction = "W" )
     [
-      set coords find-max-at-given-direction -1 0
+      set coords find-max-at-given-direction turtles-given -1 0
     ]
   ]
 
@@ -102,14 +105,16 @@ to wind-throw
 end
 
 
-to-report find-max-at-given-direction [ dir-x dir-y ]
-  let rx -1
-  let ry -1
+to-report find-max-at-given-direction [ turtles-given dir-x dir-y ]
 
-  ask turtles with [breed = fires]
+  ;; Initialize to an unreachable value
+  let rx -300
+  let ry -300
+
+  ask turtles-given
   [
-
-    if ( pxcor * dir-x + pycor * dir-y > dir-x * rx + dir-y * ry )
+                                                                      ;; initial overwrite
+    if (( pxcor * dir-x + pycor * dir-y > dir-x * rx + dir-y * ry ) or rx = -300)
     [
       set rx pxcor
       set ry pycor
@@ -124,6 +129,7 @@ to-report find-max-at-given-direction [ dir-x dir-y ]
 end
 
 
+;; Strategy is to throw water on patch with highest "wet-index" (which tells us a ration between trees, fire and wetness in neighbourhood of given cell)
 to wet-throw
 
   let most-urgent -1
@@ -177,6 +183,49 @@ to-report wet-index [ t-patch ]
     report res
 
 end
+
+;; Strategy which takes wind and humidity into account at once
+
+to-report get-last [ elem ]
+  report last elem
+end
+
+to ultimate
+
+  ;; --- Wetness part
+  let n 7
+  let wet-indices []
+  ask turtles with [breed = fires]
+  [
+    let my-turtle self
+    let elem list my-turtle wet-index(self)
+    set wet-indices lput elem wet-indices
+  ]
+
+  let sorted-indices sort-by [ [a b] -> (get-last a) > (get-last b) ] wet-indices
+
+  print sorted-indices
+
+  let biggest-n []
+  if ( n >= length sorted-indices )
+  [
+    set biggest-n sublist sorted-indices 0 (length sorted-indices)
+  ]
+  if ( n < length sorted-indices )
+  [
+    set biggest-n sublist sorted-indices 0 n
+  ]
+
+  let urgent map [ [x] -> first x ] biggest-n
+  ;; ---
+
+  ;; --- Wind part
+  let urgent-set turtle-set urgent
+  wind-throw urgent-set
+  ;; ---
+
+end
+
 ;; ---
 
 ;; Function to simulate helicopter water throw (drops water at given coordinates)
@@ -237,11 +286,11 @@ to go
     ]
     if (fighting-strategy = "Wind")
     [
-      wind-throw
+      wind-throw turtles with [breed = fires]
     ]
     if (fighting-strategy = "Wetness & Wind")
     [
-      ;; TODO
+      ultimate
     ]
   ]
 
@@ -501,7 +550,7 @@ CHOOSER
 wind-direction
 wind-direction
 "S" "N" "W" "E" "None"
-2
+0
 
 SLIDER
 18
@@ -512,7 +561,7 @@ wet-environment
 wet-environment
 0
 100
-0.0
+26.0
 1
 1
 NIL
@@ -599,7 +648,7 @@ CHOOSER
 fighting-strategy
 fighting-strategy
 "Uniform" "No fighting" "Wetness" "Wind" "Wetness & Wind"
-1
+4
 
 @#$#@#$#@
 ## WHAT IS IT?
