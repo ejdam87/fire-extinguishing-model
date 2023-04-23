@@ -11,8 +11,6 @@ globals [
   extinguish-radius     ;; Radius of water-drop inpact
   extinguish-rate       ;; once per WHAT amount of ticks will the water be dropped
 
-  influence-of-wetness  ;; how much to reduce probability of fire spread when wet environment
-
   dropped-water         ;; total amount of "cyan" cells (the cells where the water was dropped)
   extinguishing-water   ;; amount of water which was not thrown at burning tree
 
@@ -36,15 +34,10 @@ to setup
   set initial-trees count patches with [pcolor = green]
   set burned-trees 0
 
-  ask patches with [((random-float 100) < wet-environment) and (pcolor != green)]
-      [ set pcolor blue]
-
   ;; --- Global variable settings
   set default-prob 90
   set wind-prob 100
-  set opposite-prob 70
-
-  set influence-of-wetness 20
+  set opposite-prob 55
 
   set extinguish-radius 10
   set extinguish-rate 4
@@ -158,104 +151,6 @@ to-report find-max-at-given-direction [ turtles-given dir-x dir-y ]
   report res
 end
 
-
-;; Strategy is to throw water on patch with highest "wet-index" (which tells us a ration between trees, fire and wetness in neighbourhood of given cell)
-to wet-throw
-
-  let most-urgent -1
-  let urgent-x -1
-  let urgent-y -1
-  ask turtles with [breed = fires]
-  [
-    let current wet-index(self)
-    if ( current > most-urgent )
-    [
-      set most-urgent current
-      set urgent-x pxcor
-      set urgent-y pycor
-    ]
-  ]
-
-  if ( urgent-x >= 0 )
-  [
-    drop-water urgent-x urgent-y
-  ]
-
-
-end
-
-to-report wet-index [ t-patch ]
-
-    let res 0
-    ask patches in-radius 1
-    [
-      if (pcolor = red)
-      [
-        set res res + 9
-      ]
-
-      if (pcolor = green)
-      [
-        set res res + 1
-      ]
-
-      if (pcolor = black)
-      [
-        set res res + 0
-      ]
-
-      if (pcolor = blue or pcolor = cyan)
-      [
-        set res res - 1
-      ]
-
-    ]
-    report res
-
-end
-
-;; Strategy which takes wind and humidity into account at once
-
-to-report get-last [ elem ]
-  report last elem
-end
-
-to ultimate
-
-  ;; --- Wetness part
-  let n 7
-  let wet-indices []
-  ask turtles with [breed = fires]
-  [
-    let my-turtle self
-    let elem list my-turtle wet-index(self)
-    set wet-indices lput elem wet-indices
-  ]
-
-  let sorted-indices sort-by [ [a b] -> (get-last a) > (get-last b) ] wet-indices
-
-  print sorted-indices
-
-  let biggest-n []
-  if ( n >= length sorted-indices )
-  [
-    set biggest-n sublist sorted-indices 0 (length sorted-indices)
-  ]
-  if ( n < length sorted-indices )
-  [
-    set biggest-n sublist sorted-indices 0 n
-  ]
-
-  let urgent map [ [x] -> first x ] biggest-n
-  ;; ---
-
-  ;; --- Wind part
-  let urgent-set turtle-set urgent
-  wind-throw-help urgent-set
-  ;; ---
-
-end
-
 ;; ---
 
 ;; Function to simulate helicopter water throw (drops water at given coordinates)
@@ -314,17 +209,9 @@ to go
     [
       fire-throw
     ]
-    if (fighting-strategy = "Wetness")
-    [
-      wet-throw
-    ]
     if (fighting-strategy = "Wind")
     [
       wind-throw
-    ]
-    if (fighting-strategy = "Wetness & Wind")
-    [
-      ultimate
     ]
   ]
 
@@ -346,17 +233,16 @@ to spread-fire
       [
         if pcolor = green
         [
-          let north-dec decrease-chance north
           (
-            ifelse wind-direction = "N" and (random-float 100 + (north-dec)) < wind-prob
+            ifelse wind-direction = "N" and (random-float 100) < wind-prob
             [
               ignite
             ]
-            wind-direction != "N" and wind-direction = "S" and (random-float 100 + (north-dec)) < opposite-prob
+            wind-direction != "N" and wind-direction = "S" and (random-float 100) < opposite-prob
             [
               ignite
             ]
-            wind-direction != "N" and wind-direction != "S" and (random-float 100 + (north-dec)) < default-prob
+            wind-direction != "N" and wind-direction != "S" and (random-float 100) < default-prob
             [
               ignite
             ]
@@ -371,17 +257,16 @@ to spread-fire
       [
         if pcolor = green
         [
-          let south-dec decrease-chance south
           (
-            ifelse wind-direction = "S" and (random-float 100 + south-dec) < wind-prob
+            ifelse wind-direction = "S" and (random-float 100) < wind-prob
             [
               ignite
             ]
-            wind-direction != "S" and wind-direction = "N" and (random-float 100 + south-dec) < opposite-prob
+            wind-direction != "S" and wind-direction = "N" and (random-float 100) < opposite-prob
             [
               ignite
             ]
-            wind-direction != "S" and wind-direction != "N" and (random-float 100 + south-dec) < default-prob
+            wind-direction != "S" and wind-direction != "N" and (random-float 100 ) < default-prob
             [
               ignite
             ]
@@ -396,17 +281,16 @@ to spread-fire
       [
         if pcolor = green
         [
-          let east-dec decrease-chance east
           (
-            ifelse wind-direction = "E" and (random-float 100 + east-dec) < wind-prob
+            ifelse wind-direction = "E" and (random-float 100) < wind-prob
             [
               ignite
             ]
-            wind-direction != "E" and wind-direction = "W" and (random-float 100 + east-dec) < opposite-prob
+            wind-direction != "E" and wind-direction = "W" and (random-float 100) < opposite-prob
             [
               ignite
             ]
-            wind-direction != "W" and wind-direction != "E" and (random-float 100 + east-dec) < default-prob
+            wind-direction != "W" and wind-direction != "E" and (random-float 100) < default-prob
             [
               ignite
             ]
@@ -421,17 +305,16 @@ to spread-fire
       [
         if pcolor = green
         [
-          let west-dec decrease-chance west
           (
-            ifelse wind-direction = "W" and (random-float 100 + west-dec) < wind-prob
+            ifelse wind-direction = "W" and (random-float 100) < wind-prob
             [
               ignite
             ]
-            wind-direction != "W" and wind-direction = "E" and (random-float 100 + west-dec) < opposite-prob
+            wind-direction != "W" and wind-direction = "E" and (random-float 100) < opposite-prob
             [
               ignite
             ]
-            wind-direction != "W" and wind-direction != "E" and (random-float 100 + west-dec) < default-prob
+            wind-direction != "W" and wind-direction != "E" and (random-float 100) < default-prob
             [
               ignite
             ]
@@ -442,20 +325,6 @@ to spread-fire
 
     set breed embers
   ]
-end
-
-;; function reduces chances of fire (because of wet environment)
-to-report decrease-chance [t-patch] ;;
-  let result 0
-  ask t-patch[
-    ask patches in-radius 1 [
-    if pcolor = blue [
-      set result result + influence-of-wetness
-      ]
-    ]
-  ]
-
-  report result
 end
 
 ;; creates the fire turtles
@@ -517,10 +386,10 @@ ticks
 30.0
 
 MONITOR
-62
-333
-183
-378
+48
+274
+169
+319
 percent burned
 (burned-trees / initial-trees)\n* 100
 1
@@ -577,29 +446,14 @@ NIL
 1
 
 CHOOSER
-131
-230
-223
-275
+135
+188
+227
+233
 wind-direction
 wind-direction
 "S" "N" "W" "E" "None"
-0
-
-SLIDER
-18
-182
-190
-215
-wet-environment
-wet-environment
-0
-100
-26.0
 1
-1
-NIL
-HORIZONTAL
 
 SLIDER
 18
@@ -617,10 +471,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-61
-426
-183
-471
+49
+341
+171
+386
 total water spent
 dropped-water
 17
@@ -628,10 +482,10 @@ dropped-water
 11
 
 PLOT
-1115
-26
-1486
-253
+1095
+170
+1466
+397
 Growth of burned trees count
 ticks
 burned-trees / initial-trees
@@ -645,44 +499,15 @@ false
 PENS
 "default" 1.0 0 -16777216 true "" "plot burned-trees / initial-trees"
 
-PLOT
-1114
-374
-1477
-574
-Efficiency of water usage
-ticks
-extinguishing-water / dropped-water
-0.0
-500.0
-0.0
-1.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -16777216 true "" "plot extinguishing-water / dropped-water"
-
-MONITOR
-58
-518
-181
-563
-Water spent on fire
-extinguishing-water
-17
-1
-11
-
 CHOOSER
-8
-230
-117
-275
+7
+188
+116
+233
 fighting-strategy
 fighting-strategy
-"Uniform" "No fighting" "Fire density" "Wetness" "Wind" "Wetness & Wind"
-2
+"Uniform" "No fighting" "Fire density" "Wind"
+3
 
 @#$#@#$#@
 ## WHAT IS IT?
