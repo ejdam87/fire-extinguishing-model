@@ -35,9 +35,16 @@ to setup
   set burned-trees 0
 
   ;; --- Global variable settings
-  set default-prob 90
+
   set wind-prob 100
-  set opposite-prob 55
+
+
+  let standard-velocity wind-velocity / 100
+
+  set default-prob wind-prob - wind-prob * standard-velocity / 4
+
+  ;; probabilty that the fire will spread in the opposite direction of wind
+  set opposite-prob wind-prob - wind-prob * standard-velocity
 
   set extinguish-radius 10
   set extinguish-rate 4
@@ -59,11 +66,29 @@ end
 to no-throw
 end
 
-;; Strategy is to throw water randomly
+;; Strategy is to throw water at random flaming tree
 to uniform-throw
-  let x random-float (max-pxcor + 1 - min-pxcor) + min-pxcor
-  let y random-float (max-pycor + 1 - min-pycor) + min-pycor
-  drop-water x y
+
+  ;; We set coordinates to -500 because we assume that no coordinate is lower than -500 and we want it to be overwritten if fire is present
+  let x -500
+  let y -500
+
+  if any? turtles with [breed = fires]
+  [
+    ask one-of turtles with [breed = fires]
+    [
+      set x pxcor
+      set y pycor
+    ]
+  ]
+
+
+  ;; If x changed
+  if (x > -500 )
+  [
+    drop-water x y
+  ]
+
 end
 
 ;; Strategy to find an 'epicenter' of fire and throw water there
@@ -386,10 +411,10 @@ ticks
 30.0
 
 MONITOR
-48
-274
-169
-319
+46
+519
+167
+564
 percent burned
 (burned-trees / initial-trees)\n* 100
 1
@@ -397,25 +422,25 @@ percent burned
 11
 
 SLIDER
-5
-38
-190
-71
+27
+40
+212
+73
 density
 density
 0.0
 99.0
-71.0
+99.0
 1.0
 1
 %
 HORIZONTAL
 
 BUTTON
-106
-79
-175
-115
+128
+81
+197
+117
 go
 go
 T
@@ -429,10 +454,10 @@ NIL
 0
 
 BUTTON
-26
-79
-96
-115
+48
+81
+118
+117
 setup
 setup
 NIL
@@ -446,20 +471,20 @@ NIL
 1
 
 CHOOSER
-135
-188
-227
-233
+133
+283
+225
+328
 wind-direction
 wind-direction
 "S" "N" "W" "E" "None"
 1
 
 SLIDER
-18
-135
-190
-168
+31
+138
+203
+171
 extinguish-starting-tick
 extinguish-starting-tick
 0
@@ -472,9 +497,9 @@ HORIZONTAL
 
 MONITOR
 49
-341
+410
 171
-386
+455
 total water spent
 dropped-water
 17
@@ -500,14 +525,29 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot burned-trees / initial-trees"
 
 CHOOSER
-7
-188
-116
-233
+5
+284
+114
+329
 fighting-strategy
 fighting-strategy
 "Uniform" "No fighting" "Fire density" "Wind"
-3
+1
+
+SLIDER
+32
+188
+204
+221
+wind-velocity
+wind-velocity
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
