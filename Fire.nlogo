@@ -6,7 +6,13 @@ globals [
 
   opposite-prob         ;; probability that the tree which grows in the opposite direction of the wind will ignite
   wind-prob             ;; probability that the tree which grows in the direction of the wind will ignite
-  default-prob          ;; probabilty that the tree will ignite (is not influenced with wind direction)
+  default-prob          ;; probability that the tree will ignite (is not influenced with wind direction)
+
+  opposite-spread       ;; per what amount of ticks to spread fire in the opposite direction of the wind
+  wind-spread           ;; per what amount of ticks to spread fire in non-wind direction
+  default-spread        ;; per what amount of tick to spread fire in wind direction
+
+  spread-lcm
 
   extinguish-radius     ;; Radius of water-drop inpact
   extinguish-rate       ;; once per WHAT amount of ticks will the water be dropped
@@ -19,6 +25,18 @@ globals [
 
 breed [fires fire]    ;; bright red turtles -- the leading edge of the fire
 breed [embers ember]  ;; turtles gradually fading from red to near black
+
+to-report gcd [a b]
+  ifelse b = 0
+    [report a]
+    [report gcd b (a mod b)]
+end
+
+to-report lcm [a b]
+  let gcd-found (a * b) / (gcd a b)
+  let res (a * b) / gcd-found
+  report res
+end
 
 ;; function to initializes the automaton
 to setup
@@ -37,14 +55,18 @@ to setup
   ;; --- Global variable settings
 
   set wind-prob 100
-
-
   let standard-velocity wind-velocity / 100
 
   set default-prob wind-prob - wind-prob * standard-velocity / 4
 
   ;; probabilty that the fire will spread in the opposite direction of wind
   set opposite-prob wind-prob - wind-prob * standard-velocity
+
+  set wind-spread 1
+  set default-spread 2
+  set opposite-spread 3
+
+  set spread-lcm lcm (lcm wind-spread default-spread) opposite-spread
 
   set extinguish-radius 10
   set extinguish-rate 4
@@ -243,6 +265,33 @@ to go
   tick
 end
 
+to spread-fire-help [ t-patch direction opposite default1 default2 ]
+    if t-patch != nobody
+    [
+      ask t-patch
+      [
+        if pcolor = green
+        [
+          (
+            ifelse (wind-direction = direction) and ( (random-float 100) < wind-prob ) and ( ticks mod wind-spread = 0 )
+            [
+              ignite
+            ]
+            (wind-direction = opposite) and ( (random-float 100) < opposite-prob ) and ( ticks mod opposite-spread = 0 )
+            [
+              ignite
+            ]
+            (wind-direction != direction) and (wind-direction != opposite) and ( (random-float 100) < default-prob ) and ( ticks mod default-spread = 0 )
+            [
+              ignite
+            ]
+          )
+        ]
+      ]
+    ]
+
+end
+
 ;; function to spred fire (all conditions are taken into consideration)
 to spread-fire
   ask fires
@@ -252,103 +301,16 @@ to spread-fire
     let east patch-at 1 0
     let west patch-at -1 0
 
-    if north != nobody
+    spread-fire-help north "N" "S" "W" "E"
+    spread-fire-help south "S" "N" "W" "E"
+    spread-fire-help east "E" "W" "S" "N"
+    spread-fire-help west "W" "E" "S" "N"
+
+    if ( ticks mod fading-rate = 0 and ticks mod spread-lcm = 0 )
     [
-      ask north
-      [
-        if pcolor = green
-        [
-          (
-            ifelse wind-direction = "N" and (random-float 100) < wind-prob
-            [
-              ignite
-            ]
-            wind-direction != "N" and wind-direction = "S" and (random-float 100) < opposite-prob
-            [
-              ignite
-            ]
-            wind-direction != "N" and wind-direction != "S" and (random-float 100) < default-prob
-            [
-              ignite
-            ]
-          )
-        ]
-      ]
+      set breed embers
     ]
 
-    if south != nobody
-    [
-      ask south
-      [
-        if pcolor = green
-        [
-          (
-            ifelse wind-direction = "S" and (random-float 100) < wind-prob
-            [
-              ignite
-            ]
-            wind-direction != "S" and wind-direction = "N" and (random-float 100) < opposite-prob
-            [
-              ignite
-            ]
-            wind-direction != "S" and wind-direction != "N" and (random-float 100 ) < default-prob
-            [
-              ignite
-            ]
-          )
-        ]
-      ]
-    ]
-
-    if east != nobody
-    [
-      ask east
-      [
-        if pcolor = green
-        [
-          (
-            ifelse wind-direction = "E" and (random-float 100) < wind-prob
-            [
-              ignite
-            ]
-            wind-direction != "E" and wind-direction = "W" and (random-float 100) < opposite-prob
-            [
-              ignite
-            ]
-            wind-direction != "W" and wind-direction != "E" and (random-float 100) < default-prob
-            [
-              ignite
-            ]
-          )
-        ]
-      ]
-    ]
-
-    if west != nobody
-    [
-      ask west
-      [
-        if pcolor = green
-        [
-          (
-            ifelse wind-direction = "W" and (random-float 100) < wind-prob
-            [
-              ignite
-            ]
-            wind-direction != "W" and wind-direction = "E" and (random-float 100) < opposite-prob
-            [
-              ignite
-            ]
-            wind-direction != "W" and wind-direction != "E" and (random-float 100) < default-prob
-            [
-              ignite
-            ]
-          )
-        ]
-      ]
-    ]
-
-    set breed embers
   ]
 end
 
@@ -363,7 +325,7 @@ end
 ;; achieve fading color effect for the fire as it burns
 to fade-embers
 
-  if (ticks mod fading-rate = 0)
+  if ( (ticks mod fading-rate = 0) and (ticks mod spread-lcm = 0) )
   [
     ask embers
     [
