@@ -59,9 +59,17 @@ to setup
   ;; probabilty that the fire will spread in the opposite direction of wind
   set opposite-prob wind-prob - wind-prob * standard-velocity
 
-  set wind-spread 1
-  set default-spread 2
-  set opposite-spread 3
+  let base-spread 5
+  set wind-spread round ( base-spread - standard-velocity * (base-spread - 1) )
+  set default-spread round (base-spread - standard-velocity  / 4 * (base-spread - 1) )
+  set opposite-spread base-spread
+
+  if ( wind-direction = "None" )
+  [
+  set wind-spread base-spread
+  set default-spread base-spread
+  set opposite-spread base-spread
+  ]
 
   set spread-lcm lcm (lcm wind-spread default-spread) opposite-spread
 
@@ -325,7 +333,7 @@ to fade-embers
   [
     ask embers
     [
-      set color color - 0.3  ;; make red darker
+      set color color - 1      ;; make red darker
       if color < red - 3.5     ;; are we almost at black?
         [ set pcolor color
           die
@@ -388,7 +396,7 @@ density
 density
 0.0
 99.0
-68.0
+73.0
 1.0
 1
 %
@@ -447,7 +455,7 @@ extinguish-starting-tick
 extinguish-starting-tick
 0
 100
-18.0
+26.0
 1
 1
 NIL
@@ -490,7 +498,7 @@ CHOOSER
 fighting-strategy
 fighting-strategy
 "Uniform" "No fighting" "Fire density" "Wind"
-1
+3
 
 SLIDER
 32
@@ -501,7 +509,7 @@ wind-velocity
 wind-velocity
 0
 100
-50.0
+54.0
 1
 1
 NIL
