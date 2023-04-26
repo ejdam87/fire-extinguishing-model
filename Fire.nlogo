@@ -12,7 +12,7 @@ globals [
   wind-spread           ;; per what amount of ticks to spread fire in non-wind direction
   default-spread        ;; per what amount of tick to spread fire in wind direction
 
-  spread-lcm
+  spread-lcm            ;; lowest common multiple of spread values ( it servers as fading rate )
 
   extinguish-radius     ;; Radius of water-drop inpact
   extinguish-rate       ;; once per WHAT amount of ticks will the water be dropped
@@ -20,7 +20,6 @@ globals [
   dropped-water         ;; total amount of "cyan" cells (the cells where the water was dropped)
   extinguishing-water   ;; amount of water which was not thrown at burning tree
 
-  fading-rate           ;; per what amount of ticks the embers starts fading
 ]
 
 breed [fires fire]    ;; bright red turtles -- the leading edge of the fire
@@ -33,9 +32,7 @@ to-report gcd [a b]
 end
 
 to-report lcm [a b]
-  let gcd-found (a * b) / (gcd a b)
-  let res (a * b) / gcd-found
-  report res
+  report (a * b) / (gcd a b)
 end
 
 ;; function to initializes the automaton
@@ -73,8 +70,6 @@ to setup
 
   set dropped-water 0
   set extinguishing-water 0
-
-  set fading-rate 3
   ;; ---
 
   reset-ticks
@@ -306,7 +301,7 @@ to spread-fire
     spread-fire-help east "E" "W" "S" "N"
     spread-fire-help west "W" "E" "S" "N"
 
-    if ( ticks mod fading-rate = 0 and ticks mod spread-lcm = 0 )
+    if ( ticks mod spread-lcm = 0 )
     [
       set breed embers
     ]
@@ -325,7 +320,8 @@ end
 ;; achieve fading color effect for the fire as it burns
 to fade-embers
 
-  if ( (ticks mod fading-rate = 0) and (ticks mod spread-lcm = 0) )
+  print spread-lcm
+  if ( ticks mod spread-lcm = 0 )
   [
     ask embers
     [
@@ -392,7 +388,7 @@ density
 density
 0.0
 99.0
-99.0
+68.0
 1.0
 1
 %
