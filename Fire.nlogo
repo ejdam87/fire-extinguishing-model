@@ -74,7 +74,7 @@ to setup
   set spread-lcm lcm (lcm wind-spread default-spread) opposite-spread
 
   set extinguish-radius 10
-  set extinguish-rate 4
+  set extinguish-rate 7
 
   set dropped-water 0
   set extinguishing-water 0
@@ -122,7 +122,7 @@ to fire-throw
   let ry -1
   let top -1
 
-  let radius 5
+  let radius 3
 
   ask turtles with [breed = fires]
   [
@@ -201,6 +201,55 @@ to-report find-max-at-given-direction [ turtles-given dir-x dir-y ]
   report res
 end
 
+to-report wind-index [ t-patch ]
+  if ( wind-direction = "N" )
+  [
+      report pycor / max-pycor
+  ]
+
+  if ( wind-direction = "S" )
+  [
+      report -1 * pycor / max-pycor
+  ]
+
+  if ( wind-direction = "W" )
+  [
+      report -1 * pxcor / max-pxcor
+  ]
+
+  if ( wind-direction = "E" )
+  [
+      report pxcor / max-pxcor
+  ]
+end
+
+to density-wind
+
+  let top-density -1
+  let top-index -2
+  let top-x -500
+  let top-y 500
+
+  let radius 3
+
+  ask turtles with [breed = fires]
+  [
+    let current count turtles in-radius radius with [breed = fires]
+    let density-standard current / 49
+    let current-index wind-index self
+
+    if ( density-standard + current-index > top-density + top-index )
+    [
+      set top-density density-standard
+      set top-index current-index
+      set top-x pxcor
+      set top-y pycor
+    ]
+  ]
+
+  drop-water top-x top-y
+
+end
 ;; ---
 
 ;; Function to simulate helicopter water throw (drops water at given coordinates)
@@ -260,6 +309,10 @@ to go
       fire-throw
     ]
     if (fighting-strategy = "Wind")
+    [
+      wind-throw
+    ]
+    if (fighting-strategy = "Density & wind")
     [
       wind-throw
     ]
@@ -396,7 +449,7 @@ density
 density
 0.0
 99.0
-73.0
+82.0
 1.0
 1
 %
@@ -497,7 +550,7 @@ CHOOSER
 329
 fighting-strategy
 fighting-strategy
-"Uniform" "No fighting" "Fire density" "Wind"
+"Uniform" "No fighting" "Fire density" "Wind" "Density & wind"
 3
 
 SLIDER
@@ -509,7 +562,7 @@ wind-velocity
 wind-velocity
 0
 100
-54.0
+68.0
 1
 1
 NIL
