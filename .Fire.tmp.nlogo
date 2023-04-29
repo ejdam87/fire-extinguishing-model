@@ -430,10 +430,10 @@ ticks
 30.0
 
 MONITOR
-59
-383
-180
-428
+46
+519
+167
+564
 percent burned
 (burned-trees / initial-trees)\n* 100
 1
@@ -513,6 +513,17 @@ extinguish-starting-tick
 1
 NIL
 HORIZONTAL
+
+MONITOR
+49
+410
+171
+455
+total water spent
+dropped-water
+17
+1
+11
 
 PLOT
 1095
