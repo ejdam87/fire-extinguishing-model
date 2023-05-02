@@ -449,7 +449,7 @@ density
 density
 0.0
 99.0
-82.0
+70.0
 1.0
 1
 %
@@ -508,7 +508,7 @@ extinguish-starting-tick
 extinguish-starting-tick
 0
 100
-26.0
+25.0
 1
 1
 NIL
@@ -551,7 +551,7 @@ wind-velocity
 wind-velocity
 0
 100
-68.0
+53.0
 1
 1
 NIL
@@ -938,6 +938,40 @@ setup
 repeat 180 [ go ]
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment1" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>burned-trees</metric>
+    <steppedValueSet variable="density" first="50" step="1" last="70"/>
+    <enumeratedValueSet variable="wind-direction">
+      <value value="&quot;N&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="fighting-strategy">
+      <value value="&quot;Wind&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="extinguish-starting-tick">
+      <value value="25"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="wind-velocity" first="50" step="1" last="70"/>
+  </experiment>
+  <experiment name="expWithAll4scenarios" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>burned-trees</metric>
+    <steppedValueSet variable="density" first="50" step="1" last="70"/>
+    <enumeratedValueSet variable="wind-direction">
+      <value value="&quot;N&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="fighting-strategy">
+      <value value="&quot;Wind&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="extinguish-starting-tick">
+      <value value="25"/>
+    </enumeratedValueSet>
+    <steppedValueSet variable="wind-velocity" first="50" step="1" last="70"/>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
