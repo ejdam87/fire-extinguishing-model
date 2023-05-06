@@ -308,6 +308,9 @@ to go
     [
       wind-throw
     ]
+    if (fighting-strategy = "No fighting")
+    [
+    ]
     if (fighting-strategy = "Density & wind")
     [
       wind-throw
@@ -445,7 +448,7 @@ density
 density
 0.0
 99.0
-80.0
+70.0
 1.0
 1
 %
@@ -520,8 +523,8 @@ CHOOSER
 238
 fighting-strategy
 fighting-strategy
-"Uniform" "Fire density" "Wind" "Density & wind"
-2
+"Uniform" "Fire density" "Wind" "Density & wind" "No fighting"
+0
 
 SLIDER
 32
@@ -532,7 +535,7 @@ wind-velocity
 wind-velocity
 0
 100
-53.0
+82.0
 1
 1
 NIL
@@ -939,16 +942,13 @@ repeat 180 [ go ]
   <experiment name="expWithAll4scenarios" repetitions="1" runMetricsEveryStep="true">
     <setup>setup</setup>
     <go>go</go>
-    <metric>burned-trees</metric>
+    <metric>(burned-trees / initial-trees) * 100</metric>
     <steppedValueSet variable="density" first="30" step="1" last="70"/>
     <enumeratedValueSet variable="wind-direction">
       <value value="&quot;N&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="fighting-strategy">
-      <value value="&quot;Wind&quot;"/>
       <value value="&quot;Uniform&quot;"/>
-      <value value="&quot;Density&quot;"/>
-      <value value="&quot;Density &amp; wind&quot;"/>
     </enumeratedValueSet>
     <steppedValueSet variable="wind-velocity" first="0" step="1" last="100"/>
   </experiment>
