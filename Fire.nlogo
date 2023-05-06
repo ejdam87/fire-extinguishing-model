@@ -1,24 +1,26 @@
 ;; Base fire model adapted and enhanced by: Adam Dzadon & Martin Tucek ( Masaryk's University )
 
 globals [
-  initial-trees         ;; how many trees (green patches) we started with
-  burned-trees          ;; how many have burned so far
+  initial-trees             ;; how many trees (green patches) we started with
+  burned-trees              ;; how many have burned so far
 
-  opposite-prob         ;; probability that the tree which grows in the opposite direction of the wind will ignite
-  wind-prob             ;; probability that the tree which grows in the direction of the wind will ignite
-  default-prob          ;; probability that the tree will ignite (is not influenced with wind direction)
+  opposite-prob             ;; probability that the tree which grows in the opposite direction of the wind will ignite
+  wind-prob                 ;; probability that the tree which grows in the direction of the wind will ignite
+  default-prob              ;; probability that the tree will ignite (is not influenced with wind direction)
 
-  opposite-spread       ;; per what amount of ticks to spread fire in the opposite direction of the wind
-  wind-spread           ;; per what amount of ticks to spread fire in non-wind direction
-  default-spread        ;; per what amount of tick to spread fire in wind direction
+  opposite-spread           ;; per what amount of ticks to spread fire in the opposite direction of the wind
+  wind-spread               ;; per what amount of ticks to spread fire in non-wind direction
+  default-spread            ;; per what amount of tick to spread fire in wind direction
 
-  spread-lcm            ;; lowest common multiple of spread values ( it servers as fading rate )
+  spread-lcm                ;; lowest common multiple of spread values ( it servers as fading rate )
 
-  extinguish-radius     ;; Radius of water-drop inpact
-  extinguish-rate       ;; once per WHAT amount of ticks will the water be dropped
+  extinguish-radius         ;; Radius of water-drop inpact
+  extinguish-rate           ;; once per WHAT amount of ticks will the water be dropped
 
-  dropped-water         ;; total amount of "cyan" cells (the cells where the water was dropped)
-  extinguishing-water   ;; amount of water which was not thrown at burning tree
+  dropped-water             ;; total amount of "cyan" cells (the cells where the water was dropped)
+  extinguishing-water       ;; amount of water which was not thrown at burning tree
+
+  extinguish-starting-tick  ;; at what tick to start fire fighting
 
 ]
 
@@ -76,6 +78,8 @@ to setup
   set extinguish-radius 10
   set extinguish-rate 7
 
+  set extinguish-starting-tick 20
+
   set dropped-water 0
   set extinguishing-water 0
   ;; ---
@@ -86,10 +90,6 @@ end
 
 ;; Fire-fighting strategies
 ;; ---
-
-;; Strategy is to not throw any water at all
-to no-throw
-end
 
 ;; Strategy is to throw water at random flaming tree
 to uniform-throw
@@ -300,10 +300,6 @@ to go
     [
       uniform-throw
     ]
-    if (fighting-strategy = "No fighting")
-    [
-      no-throw
-    ]
     if (fighting-strategy = "Fire density")
     [
       fire-throw
@@ -449,7 +445,7 @@ density
 density
 0.0
 99.0
-70.0
+80.0
 1.0
 1
 %
@@ -490,29 +486,14 @@ NIL
 1
 
 CHOOSER
-133
-283
-225
-328
+137
+192
+229
+237
 wind-direction
 wind-direction
 "S" "N" "W" "E" "None"
 1
-
-SLIDER
-31
-138
-203
-171
-extinguish-starting-tick
-extinguish-starting-tick
-0
-100
-25.0
-1
-1
-NIL
-HORIZONTAL
 
 PLOT
 1095
@@ -533,20 +514,20 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot burned-trees / initial-trees"
 
 CHOOSER
-5
-284
-114
-329
+9
+193
+118
+238
 fighting-strategy
 fighting-strategy
-"Uniform" "No fighting" "Fire density" "Wind" "Density & wind"
-3
+"Uniform" "Fire density" "Wind" "Density & wind"
+2
 
 SLIDER
 32
-188
+140
 204
-221
+173
 wind-velocity
 wind-velocity
 0
@@ -959,17 +940,17 @@ repeat 180 [ go ]
     <setup>setup</setup>
     <go>go</go>
     <metric>burned-trees</metric>
-    <steppedValueSet variable="density" first="50" step="1" last="70"/>
+    <steppedValueSet variable="density" first="30" step="1" last="70"/>
     <enumeratedValueSet variable="wind-direction">
       <value value="&quot;N&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="fighting-strategy">
       <value value="&quot;Wind&quot;"/>
+      <value value="&quot;Uniform&quot;"/>
+      <value value="&quot;Density&quot;"/>
+      <value value="&quot;Density &amp; wind&quot;"/>
     </enumeratedValueSet>
-    <enumeratedValueSet variable="extinguish-starting-tick">
-      <value value="25"/>
-    </enumeratedValueSet>
-    <steppedValueSet variable="wind-velocity" first="50" step="1" last="70"/>
+    <steppedValueSet variable="wind-velocity" first="0" step="1" last="100"/>
   </experiment>
 </experiments>
 @#$#@#$#@
