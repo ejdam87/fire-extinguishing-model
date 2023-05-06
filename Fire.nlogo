@@ -434,7 +434,7 @@ MONITOR
 180
 428
 percent burned
-(burned-trees / initial-trees)\n* 100
+(burned-trees / initial-trees) * 100
 1
 1
 11
@@ -448,7 +448,7 @@ density
 density
 0.0
 99.0
-70.0
+74.0
 1.0
 1
 %
@@ -524,7 +524,7 @@ CHOOSER
 fighting-strategy
 fighting-strategy
 "Uniform" "Fire density" "Wind" "Density & wind" "No fighting"
-0
+4
 
 SLIDER
 32
@@ -535,7 +535,7 @@ wind-velocity
 wind-velocity
 0
 100
-82.0
+100.0
 1
 1
 NIL
@@ -939,18 +939,19 @@ repeat 180 [ go ]
     </enumeratedValueSet>
     <steppedValueSet variable="wind-velocity" first="50" step="1" last="70"/>
   </experiment>
-  <experiment name="expWithAll4scenarios" repetitions="1" runMetricsEveryStep="true">
+  <experiment name="expWithAll4scenarios" repetitions="1" sequentialRunOrder="false" runMetricsEveryStep="false">
     <setup>setup</setup>
     <go>go</go>
-    <metric>(burned-trees / initial-trees) * 100</metric>
-    <steppedValueSet variable="density" first="30" step="1" last="70"/>
+    <metric>burned-trees</metric>
+    <metric>initial-trees</metric>
+    <steppedValueSet variable="density" first="70" step="2" last="85"/>
     <enumeratedValueSet variable="wind-direction">
       <value value="&quot;N&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="fighting-strategy">
-      <value value="&quot;Uniform&quot;"/>
+      <value value="&quot;No fighting&quot;"/>
     </enumeratedValueSet>
-    <steppedValueSet variable="wind-velocity" first="0" step="1" last="100"/>
+    <steppedValueSet variable="wind-velocity" first="0" step="5" last="100"/>
   </experiment>
 </experiments>
 @#$#@#$#@
