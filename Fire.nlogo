@@ -448,7 +448,7 @@ density
 density
 0.0
 99.0
-74.0
+90.0
 1.0
 1
 %
@@ -524,7 +524,7 @@ CHOOSER
 fighting-strategy
 fighting-strategy
 "Uniform" "Fire density" "Wind" "Density & wind" "No fighting"
-4
+3
 
 SLIDER
 32
@@ -535,7 +535,7 @@ wind-velocity
 wind-velocity
 0
 100
-100.0
+90.0
 1
 1
 NIL
@@ -944,12 +944,12 @@ repeat 180 [ go ]
     <go>go</go>
     <metric>burned-trees</metric>
     <metric>initial-trees</metric>
-    <steppedValueSet variable="density" first="70" step="2" last="85"/>
+    <steppedValueSet variable="density" first="40" step="2" last="90"/>
     <enumeratedValueSet variable="wind-direction">
       <value value="&quot;N&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="fighting-strategy">
-      <value value="&quot;No fighting&quot;"/>
+      <value value="&quot;Density &amp; wind&quot;"/>
     </enumeratedValueSet>
     <steppedValueSet variable="wind-velocity" first="0" step="5" last="100"/>
   </experiment>

@@ -7,17 +7,13 @@ import matplotlib.pyplot as plt
 sns.set()
 
 ## --- Path loading
-SPARSE_WIND = os.path.join( "data", "sparse_wind.csv" )
-SPARSE_UNIFORM = os.path.join( "data", "sparse_uniform.csv" )
-SPARSE_DENSITY = os.path.join( "data", "sparse_density.csv" )
-SPARSE_NO = os.path.join( "data", "sparse_no.csv" )
-SPARSE_DENSITY_WIND = os.path.join( "data", "sparse_density_wind.csv" )
+WIND = os.path.join( "data", "wind.csv" )
+DENSITY = os.path.join( "data", "density.csv" )
+UNIFORM = os.path.join( "data", "uniform.csv" )
+DENSITY_WIND = os.path.join( "data", "density_wind.csv" )
+NO = os.path.join( "data", "no.csv" )
 
-DENSE_WIND = os.path.join( "data", "dense_wind.csv" )
-DENSE_DENSITY = os.path.join( "data", "dense_density.csv" )
-DENSE_UNIFORM = os.path.join( "data", "dense_uniform.csv" )
-DENSE_DENSITY_WIND = os.path.join( "data", "dense_density_wind.csv" )
-DENSE_NO = os.path.join( "data", "dense_no.csv" )
+OVERALL = os.path.join( "data", "overall.csv" )
 ## ---
 
 def load_data( path: str ) -> pd.DataFrame:
@@ -36,17 +32,13 @@ def load_data( path: str ) -> pd.DataFrame:
     return dataset
 
 ## --- Data loading
-sparse_wind = load_data( SPARSE_WIND )
-sparse_density = load_data( SPARSE_DENSITY )
-sparse_density_wind = load_data( SPARSE_DENSITY_WIND )
-sparse_uniform = load_data( SPARSE_UNIFORM )
-sparse_no = load_data( SPARSE_NO )
+wind = load_data( WIND )
+density = load_data( DENSITY )
+uniform = load_data( UNIFORM )
+density_wind = load_data( DENSITY_WIND )
+no = load_data( NO )
 
-dense_wind = load_data( DENSE_WIND )
-dense_density = load_data( DENSE_DENSITY )
-dense_uniform = load_data( DENSE_UNIFORM )
-dense_density_wind = load_data( DENSE_DENSITY_WIND )
-dense_no = load_data( DENSE_NO )
+overall = load_data( OVERALL )
 ## ---
 
 def plot_dependency( data: pd.DataFrame ) -> None:
@@ -67,34 +59,44 @@ def get_avg_burned( data: pd.DataFrame ) -> float:
     """
     return data[ "[final]" ].median(), np.sum( data[ "[final]" ] ) / len( data[ "[final]" ] )
 
+def get_deviation( data: pd.DataFrame ) -> float:
+    return data[ "[final]" ].std()
+
 
 strategies = [ "Wind", "Fire density", "Density & wind", "Uniform", "No fighting" ]
-environments = [ "Sparse", "Dense" ]
 
-datasets = { ("Sparse", "Wind"): sparse_wind,
-             ("Sparse", "Fire density"): sparse_density,
-             ("Sparse", "Density & wind"): sparse_density_wind,
-             ("Sparse", "Uniform"): sparse_uniform,
-             ("Sparse", "No fighting"): sparse_no,
 
-             ("Dense", "Wind"): dense_wind,
-             ("Dense", "Fire density"): dense_density,
-             ("Dense", "Density & wind"): dense_density_wind,
-             ("Dense", "Uniform"): dense_uniform,
-             ("Dense", "No fighting"): dense_no,
+datasets = { "Wind": wind,
+             "Fire density": density,
+             "Density & wind": density_wind,
+             "Uniform": uniform,
+             "No fighting": no,
  }
 
-def burn_matrix( kind: int ):
-    matrix = np.empty( shape=(5, 2) )
+
+def burned():
+    matrix = np.empty( shape=(5, 3) )
     matrix.fill( 1 )
 
-    for i, env in enumerate( environments ):
-        for j, strat in enumerate( strategies ):
-            dataset = datasets[ (env, strat) ]
-            matrix[ j, i ] = get_avg_burned( dataset )[kind]
+    for i, strat in enumerate( strategies ):
+        dataset = datasets[ strat ]
+        matrix[ i, 0 ] = get_avg_burned( dataset )[1]
+        matrix[ i, 1 ] = get_avg_burned( dataset )[0]
+        matrix[ i, 2 ] = get_deviation( dataset )
 
-    return pd.DataFrame( data=matrix, index=strategies, columns=environments )
+    return pd.DataFrame( data=matrix, index=strategies, columns=["Average % burned", "Mean % burned", "Standard deviation"] )
 
 
 def get_markdown( data: pd.DataFrame ) -> str:
     return data.to_markdown()
+
+
+def heatmap_overall( data: pd.DataFrame ) -> None:
+    matrix = data.pivot( index="density", columns="wind-velocity", values="[final]" )
+    ax = sns.heatmap( matrix, vmin=0, vmax=100 )
+    ax.invert_yaxis()
+    plt.show()
+
+
+frame = burned()
+print( get_markdown( frame ) )
