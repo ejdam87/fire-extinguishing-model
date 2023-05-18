@@ -47,6 +47,7 @@ def plot_dependency( data: pd.DataFrame ) -> None:
     """
 
     title = data[ "fighting-strategy" ].iloc[0]
+
     ax = sns.scatterplot( data=data, x="density", y="[final]", hue="wind-velocity" )
     ax.set_title( f"Strategy: {title}" )
     ax.set_ylabel( "Burnt trees %" )
@@ -75,16 +76,15 @@ datasets = { "Wind": wind,
 
 
 def burned():
-    matrix = np.empty( shape=(5, 3) )
+    matrix = np.empty( shape=(5, 2) )
     matrix.fill( 1 )
 
     for i, strat in enumerate( strategies ):
         dataset = datasets[ strat ]
-        matrix[ i, 0 ] = get_avg_burned( dataset )[1]
-        matrix[ i, 1 ] = get_avg_burned( dataset )[0]
-        matrix[ i, 2 ] = get_deviation( dataset )
+        matrix[ i, 0 ] = round( get_avg_burned( dataset )[1], 2 )
+        matrix[ i, 1 ] = round( get_avg_burned( dataset )[0], 2 )
 
-    return pd.DataFrame( data=matrix, index=strategies, columns=["Average % burned", "Mean % burned", "Standard deviation"] )
+    return pd.DataFrame( data=matrix, index=strategies, columns=["Mean % burned", "Median % burned"] )
 
 
 def get_markdown( data: pd.DataFrame ) -> str:
@@ -98,5 +98,4 @@ def heatmap_overall( data: pd.DataFrame ) -> None:
     plt.show()
 
 
-frame = burned()
-print( get_markdown( frame ) )
+plot_dependency( wind )
