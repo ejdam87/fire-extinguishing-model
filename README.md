@@ -27,4 +27,4 @@ Our model describing the spread of fire is affected by the assumptions we put in
 In the basic version of the model, the fire spreads as follows: for each burning cell in the automaton, I look at its neighbors and light them on fire. In the extended version, for each cell, the neighboring cell is detected whether it is downwind or upwind, and is assigned a probability of ignition based on that. The consequence of this change is that for a given fixed density, a smaller area will be burned with high probability, because unlike in the original model, in the model with wind there is not a 100% chance that the neighborhood of a burning tree will be ignited. In addition, however, this change naturally simulates the wind and thus the fire spreads in its direction.
 Model Objective: To find the optimal firefighting tactics based on the given conditions.
 
-![Showcase](https://scontent-vie1-1.xx.fbcdn.net/v/t1.15752-9/354741500_1300627390661432_2977514419764921248_n.png?_nc_cat=109&cb=99be929b-3346023f&ccb=1-7&_nc_sid=ae9488&_nc_ohc=afQbp5LZwSQAX8Nw9m8&_nc_ht=scontent-vie1-1.xx&oh=03_AdSn8lK8kz_zAtlY7hgJUENckg4SNIc1rlHsrU6LVhXb5w&oe=64B52888)
+![Showcase](./example.png)
